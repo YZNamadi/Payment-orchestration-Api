@@ -1,0 +1,37 @@
+# Node/NestJS project ignores
+# Dependencies
+node_modules/
+
+# Build outputs
+/dist/
+/.cache/
+
+# TypeScript incremental build info
+/tsconfig.tsbuildinfo
+
+# Test coverage
+/coverage/
+
+# Logs and debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Environment files
+.env
+.env.*
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Redis/RabbitMQ local data (if any)
+redis-data/
+rabbitmq-data/
