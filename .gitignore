@@ -35,3 +35,47 @@ Thumbs.db
 # Redis/RabbitMQ local data (if any)
 redis-data/
 rabbitmq-data/
+
+# Additional ignores
+
+# Testing artifacts
+.nyc_output/
+.eslintcache
+
+# Package manager caches and stores
+.pnpm-store/
+npm-packages-offline-cache/
+
+# Yarn Plug'n'Play
+.pnp/
+.pnp.js
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.swo
+
+# Process IDs
+*.pid
+*.pid.lock
+
+# REPL history
+.node_repl_history
+
+# Tarballs
+*.tgz
+
+# VS Code workspace files
+*.code-workspace
+
+# Local env overrides
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Project-specific scratch files
+metrics.txt
