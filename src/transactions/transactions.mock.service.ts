@@ -50,6 +50,10 @@ export class TransactionsMockService {
   }) {
     const entity = this.store.find(t => t.reference === params.reference);
     if (!entity) return null;
+    // Idempotency: skip updates if already finalized
+    if (entity.status !== 'PENDING') {
+      return entity;
+    }
     entity.status = params.status;
     if (params.provider_summary !== undefined) {
       entity.provider_summary = params.provider_summary;

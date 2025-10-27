@@ -54,6 +54,10 @@ export class TransactionsService {
   }) {
     const entity = await this.repo.findOne({ where: { reference: params.reference } });
     if (!entity) return null;
+    // Idempotency: skip updates if already finalized
+    if (entity.status !== 'PENDING') {
+      return entity;
+    }
     entity.status = params.status;
     if (params.provider_summary !== undefined) {
       entity.provider_summary = params.provider_summary;

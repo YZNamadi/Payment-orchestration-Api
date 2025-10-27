@@ -1,4 +1,5 @@
 import { BadRequestException, Controller, Headers, Post, Req, Body } from '@nestjs/common';
+import { MetricsService } from '../metrics/metrics.service';
 import { Request } from 'express';
 import { PaystackService } from '../providers/paystack.service';
 import { FlutterwaveService } from '../providers/flutterwave.service';
@@ -20,6 +21,7 @@ export class WebhooksController {
     private readonly paystack: PaystackService,
     private readonly flutterwave: FlutterwaveService,
     private readonly transactions: TransactionsService,
+    private readonly metrics: MetricsService,
   ) {}
 
   @Post('payment')
@@ -30,6 +32,7 @@ export class WebhooksController {
     const isPaystack = this.paystack.verifyWebhook(hdrs, rawBody);
     const isFlutterwave = this.flutterwave.verifyWebhook(hdrs, rawBody);
     if (!isPaystack && !isFlutterwave) {
+      this.metrics.incWebhook('UNKNOWN', 'invalid_signature');
       throw new BadRequestException('Invalid webhook signature');
     }
 
@@ -37,18 +40,30 @@ export class WebhooksController {
       ? this.paystack.normalizeWebhook(body)
       : this.flutterwave.normalizeWebhook(body);
 
-    await this.transactions.updateStatusByReference({
-      reference: normalized.reference,
-      status: normalized.status,
-      provider_summary: {
-        provider: normalized.provider,
-        amount: normalized.amount,
-        currency: normalized.currency,
-        status: normalized.status,
-      },
-      provider_response_encrypted: body,
-    });
+    // Idempotency: avoid duplicate updates if transaction already finalized
+    const existing = await this.transactions.getByReference(normalized.reference);
+    if (existing && existing.status !== 'PENDING') {
+      this.metrics.incWebhook(normalized.provider, 'duplicate');
+      return { ok: true };
+    }
 
-    return { ok: true };
+    try {
+      await this.transactions.updateStatusByReference({
+        reference: normalized.reference,
+        status: normalized.status,
+        provider_summary: {
+          provider: normalized.provider,
+          amount: normalized.amount,
+          currency: normalized.currency,
+          status: normalized.status,
+        },
+        provider_response_encrypted: body,
+      });
+      this.metrics.incWebhook(normalized.provider, 'success');
+      return { ok: true };
+    } catch (e) {
+      this.metrics.incWebhook(normalized.provider, 'error');
+      throw e;
+    }
   }
 }

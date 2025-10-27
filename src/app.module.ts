@@ -10,6 +10,7 @@ import { ProvidersModule } from './providers/providers.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     ProvidersModule,
     PaymentsModule,
     WebhooksModule,
+    MetricsModule,
   ],
   controllers: [],
   providers: [
